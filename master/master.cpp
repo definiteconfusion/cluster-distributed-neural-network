@@ -1,16 +1,12 @@
 void setup()
 {
-    Serial.begin(9600);
     Serial1.begin(4800);
-    Serial2.begin(4800);
 
 }
 
 void loop()
 {
-    if (Serial.available())
-    {
-        Serial1.write(Serial.read());
-    }
+    Serial1.println("8.2, 0.5, 0.5, 0.5, 0.5"); // Send data to the worker
+    delay(1000); // Wait for a second before sending the next message
 }
 
