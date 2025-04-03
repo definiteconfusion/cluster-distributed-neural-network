@@ -6,11 +6,12 @@ int numWeights = 0;  // Number of weights received
 
 void setup() {
   Serial.begin(9600);  // Initialize serial communication
+  Serial1.begin(4800);  // Initialize serial communication
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    String inputString = Serial.readStringUntil('\n');
+  if (Serial1.available() > 0) {
+    String inputString = Serial1.readStringUntil('\n');
     parseInput(inputString);
     processWeights();
     printResults();
@@ -57,11 +58,6 @@ void parseInput(String input) {
     numWeights++;
   }
   
-  // Check if the last weight exists (when there's no trailing comma)
-  if (startIndex < input.length() && numWeights < MAX_WEIGHTS) {
-    weights[numWeights] = input.substring(startIndex).toFloat();
-    numWeights++;
-  }
 }
 
 void processWeights() {
@@ -70,13 +66,21 @@ void processWeights() {
 
   float layer_weight = 0.0;
     for (int i = 0; i < numWeights; i++) {
+      Serial.println(weights[i]);
         layer_weight += weights[i];
     }
 
   float lr = 0.1; // Learning rate
-
+  // Calculate the update factor once to avoid potential division by zero
+  float update_factor = 0;
+  if (x != 0 && layer_weight != 0) {
+    update_factor = lr * (((y-z) / x) / (layer_weight / sI));
+  }
+  
   for (int i = 0; i < numWeights; i++) {
-    weights[i] = weights[i] + lr * (((y-z) / x) / (layer_weight / sI));
+    Serial.print(weights[i]);
+    weights[i] = weights[i] + update_factor;
+    Serial.println(weights[i]);
   }
 }
 
