@@ -19,34 +19,59 @@ void loop() {
 }
 
 void parseInput(String input) {
+  // Example input: 1, 30, 0.5, 1.27, 3.55, 0.7, 0.5, 0.2
   // Reset number of weights
   numWeights = 0;
   
-  // Parse the input string
-  int commaIndex = input.indexOf(',');
+  // Find the first comma to skip the initial value
   int startIndex = 0;
+  int commaIndex = input.indexOf(',');
+  if (commaIndex == -1) return; // Error case, no commas found
   
-  // Parse x
-  x = input.substring(startIndex, commaIndex).toFloat();
+  // Parse x - it's the second value in the string
   startIndex = commaIndex + 1;
+  commaIndex = input.indexOf(',', startIndex);
+  if (commaIndex == -1) {
+    // If there's no more commas, take the rest of the string
+    x = input.substring(startIndex).toFloat();
+    return; // No more values to parse
+  } else {
+    x = input.substring(startIndex, commaIndex).toFloat();
+  }
   
   // Parse y
-  commaIndex = input.indexOf(',', startIndex);
-  y = input.substring(startIndex, commaIndex).toFloat();
   startIndex = commaIndex + 1;
+  commaIndex = input.indexOf(',', startIndex);
+  if (commaIndex == -1) {
+    y = input.substring(startIndex).toFloat();
+    return;
+  } else {
+    y = input.substring(startIndex, commaIndex).toFloat();
+  }
   
   // Parse z
-  commaIndex = input.indexOf(',', startIndex);
-  z = input.substring(startIndex, commaIndex).toFloat();
   startIndex = commaIndex + 1;
+  commaIndex = input.indexOf(',', startIndex);
+  if (commaIndex == -1) {
+    z = input.substring(startIndex).toFloat();
+    return;
+  } else {
+    z = input.substring(startIndex, commaIndex).toFloat();
+  }
   
   // Parse sI
-  commaIndex = input.indexOf(',', startIndex);
-  sI = input.substring(startIndex, commaIndex).toFloat();
   startIndex = commaIndex + 1;
+  commaIndex = input.indexOf(',', startIndex);
+  if (commaIndex == -1) {
+    sI = input.substring(startIndex).toFloat();
+    return;
+  } else {
+    sI = input.substring(startIndex, commaIndex).toFloat();
+  }
   
   // Parse weights
-  while (commaIndex != -1 && numWeights < MAX_WEIGHTS) {
+  startIndex = commaIndex + 1;
+  while (startIndex < input.length() && numWeights < MAX_WEIGHTS) {
     commaIndex = input.indexOf(',', startIndex);
     if (commaIndex != -1) {
       weights[numWeights] = input.substring(startIndex, commaIndex).toFloat();
@@ -54,10 +79,10 @@ void parseInput(String input) {
     } else {
       // Last value (no comma after it)
       weights[numWeights] = input.substring(startIndex).toFloat();
+      startIndex = input.length();
     }
     numWeights++;
   }
-  
 }
 
 void processWeights() {
@@ -66,7 +91,6 @@ void processWeights() {
 
   float layer_weight = 0.0;
     for (int i = 0; i < numWeights; i++) {
-      Serial.println(weights[i]);
         layer_weight += weights[i];
     }
 
@@ -74,23 +98,22 @@ void processWeights() {
   // Calculate the update factor once to avoid potential division by zero
   float update_factor = 0;
   if (x != 0 && layer_weight != 0) {
-    update_factor = lr * (((y-z) / x) / (layer_weight / sI));
+    // update_factor = lr * ((((float)(z - y) / y) * ((float)layer_weight / sI)) * (1.0f / x));
+    update_factor = (1.0 / (((z - y) / y) * ((z - y) / y))) * (layer_weight / sI);
+    Serial.println(update_factor);
   }
   
   for (int i = 0; i < numWeights; i++) {
-    Serial.print(weights[i]);
     weights[i] = weights[i] + update_factor;
-    Serial.println(weights[i]);
   }
 }
 
 void printResults() {
   // Print the modified weights
-  Serial.println("");
   for (int i = 0; i < numWeights; i++) {
-    Serial.print(weights[i]);
+    Serial1.print(weights[i]);
     if (i < numWeights - 1) {
-      Serial.print(", ");
+      Serial1.print(", ");
     }
   }
 }
